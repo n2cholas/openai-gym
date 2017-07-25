@@ -18,7 +18,7 @@ env = gym.make('CartPole-v0')
 env.reset()
 goal_steps = 500 #how many frames it can stay up
 score_requirement = 50 #learn from games that get a score of this or above
-initial_games = 10000 
+initial_games = 10000
 
 def some_random_games_first():
     for episode in range(5):
@@ -120,3 +120,35 @@ def train_model(training_data, model=False):
 
 training_data = initial_population()
 model = train_model(training_data)
+
+#model.save() #could save the  model and import for longer ones
+
+scores = []
+choices = []
+
+for each_game in range(10): #very similar to above function, could probably combine
+    score = 0
+    game_memory = []
+    prev_obs = []
+    env.reset()
+
+    for _ in range(goal_steps):
+        env.render()
+        if len(prev_obs) == 0:
+            action = random.randrange(0, 2)
+        else:
+            action = np.argmax(model.predict(prev_obs.reshape(-1,len(prev_obs), 1))[0])
+
+        choices.append(action) #want to know all actions so we can look at it and analyze later, just in case it is predicting one option too often
+
+        new_observation, reward, done, info = env.step(action)
+        prev_obs = new_observation
+        game_memory.append([new_observation, action]) #don't need unless you want to retrain, can keep saving game and retraining
+        score+=reward
+        if done:
+            break
+
+    scores.append(score)
+    
+print('Average score:', sum(scores)/len(scores))
+print('Choice 1: {}, Choice 0: {}'.format(choices.count(1)/len(choices), choices.count(0)/len(choices)))
