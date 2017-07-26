@@ -1,0 +1,2 @@
+model_checkpoint_path: "D:\\Documents\\GitHub\\openai-gym\\cartpole_model.model"
+all_model_checkpoint_paths: "D:\\Documents\\GitHub\\openai-gym\\cartpole_model.model"

@@ -14,11 +14,14 @@ from statistics import mean, median
 from collections import Counter
 
 LR = 1e-3 #learning rate
-env = gym.make('CartPole-v0')
+env = gym.make('BipedalWalkerHardcore-v2')
 env.reset()
 goal_steps = 500 #how many frames it can stay up
 score_requirement = 50 #learn from games that get a score of this or above
 initial_games = 10000
+
+savename = 'x.model' #control save name
+loadFile = false #adjust if you load a model or save it
 
 def some_random_games_first():
     for episode in range(5):
@@ -33,8 +36,6 @@ def some_random_games_first():
             if done:
                 break
 
-#some_random_games_first() #see if things are working as you expect
-
 def initial_population():
     training_data = [] #observation and move made (all random), but only use if score above 50
     scores = []
@@ -44,7 +45,7 @@ def initial_population():
         game_memory = [] #store movements
         prev_observation = []
         for _ in range (goal_steps):
-            action = random.randrange(0, 2) #env.action_space.sample() might be better, but this corresponds to left and right movement
+            action = action_space.sample()  #env.action_space.sample() might be better, but this corresponds to left and right movement
             observation, reward, done, info = env.step(action)
 
             if len(prev_observation) > 0:
@@ -77,8 +78,6 @@ def initial_population():
     print(Counter(accepted_scores))
 
     return training_data
-
-#initial_population()
 
 def neural_network_model(input_size):
     network = input_data(shape=[None, input_size, 1], name='input')
@@ -118,10 +117,18 @@ def train_model(training_data, model=False):
 
     return model
 
-training_data = initial_population()
-model = train_model(training_data)
 
-#model.save() #could save the  model and import for longer ones
+#--------------------------------Main Program
+
+if not loadFile:
+    #some_random_games_first() #see if things are working as you expect
+    training_data = initial_population()
+    model = train_model(training_data)
+    model.save(savename) #could save the  model and import for longer ones
+else:
+    training_data = initial_population()
+    model = train_model(training_data)
+    model.load('cartpole_model.model')
 
 scores = []
 choices = []
@@ -149,6 +156,6 @@ for each_game in range(10): #very similar to above function, could probably comb
             break
 
     scores.append(score)
-    
+
 print('Average score:', sum(scores)/len(scores))
 print('Choice 1: {}, Choice 0: {}'.format(choices.count(1)/len(choices), choices.count(0)/len(choices)))
