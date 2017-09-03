@@ -1,0 +1,10 @@
+*.pickle
+*.csv
+*.zip
+*.rar
+*.data-00000-of-00001
+*.index
+*.meta
+*.gz
+checkpoint
+*.model

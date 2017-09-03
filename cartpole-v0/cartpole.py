@@ -5,7 +5,7 @@
 #   Train Neural Network with Open AI
 
 import gym #open ai gym
-import random
+import random #initially random moves
 import numpy as np
 import tflearn
 from tflearn.layers.core import input_data, dropout, fully_connected
@@ -18,7 +18,7 @@ env = gym.make('CartPole-v0')
 env.reset()
 goal_steps = 500 #how many frames it can stay up
 score_requirement = 50 #learn from games that get a score of this or above
-initial_games = 10000
+initial_games = 10000 
 
 def some_random_games_first():
     for episode in range(5):
@@ -33,8 +33,6 @@ def some_random_games_first():
             if done:
                 break
 
-#some_random_games_first() #see if things are working as you expect
-
 def initial_population():
     training_data = [] #observation and move made (all random), but only use if score above 50
     scores = []
@@ -44,23 +42,25 @@ def initial_population():
         game_memory = [] #store movements
         prev_observation = []
         for _ in range (goal_steps):
-            action = random.randrange(0, 2) #env.action_space.sample() might be better, but this corresponds to left and right movement
+            action = env.action_space.sample()
+            #()random.randrange(0, 2) #env.action_space.sample() might be better, but this corresponds to left and right movement
             observation, reward, done, info = env.step(action)
 
             if len(prev_observation) > 0:
                 game_memory.append([prev_observation, action]) #because this action caused current observation, so previous observation was what lead to current action
             
             prev_observation = observation
-            score += reward #reward is one or zero
-            if done:
-                break
+            score += reward #reward is one or zero (zero if lost)
 
-        if score >= score_requirement:
+            if done:
+                breaks
+            
+        if score >= score_requirement: #if it's a winning game
             accepted_scores.append(score)
 
-            for data in game_memory:
+            for data in game_memory: 
                 if data[1] == 1:
-                    output = [0,1]
+                    output = [0,1] 
                 elif data[1] == 0:
                     output = [1,0]
                 
@@ -74,11 +74,9 @@ def initial_population():
 
     print('Average accepted score:', mean(accepted_scores))
     print('Median accepted score:', median(accepted_scores))
-    print(Counter(accepted_scores))
+    print(Counter(accepted_scores)) #counts how many of each score appear
 
     return training_data
-
-#initial_population()
 
 def neural_network_model(input_size):
     network = input_data(shape=[None, input_size, 1], name='input')
@@ -101,7 +99,7 @@ def neural_network_model(input_size):
     network = fully_connected(network, 2, activation='softmax')
     network = regression(network, optimizer='adam', learning_rate=LR, loss='categorical_crossentropy', name='targets')
 
-    model = tflearn.DNN(network, tensorboard_dir='log')
+    model = tflearn.DNN(network)
 
     return model
 
@@ -112,11 +110,14 @@ def train_model(training_data, model=False):
     if not model:
         model = neural_network_model(input_size = len(X[0]))
     
-    model.fit({'input':X},{'targets':y}, n_epoch=5,snapshot_step=500, show_metric=True, run_id='openaistuff') 
+    model.fit({'input':X},{'targets':y}, n_epoch=5,snapshot_step=5000, show_metric=True, run_id='openaistuff') 
     #too many epochs, it's going to overfit
     #in fact, 95% or greater accuract might mean overfitting --> trouble
 
     return model
+
+
+#some_random_games_first() #see if things are working as you expect
 
 training_data = initial_population()
 model = train_model(training_data)
