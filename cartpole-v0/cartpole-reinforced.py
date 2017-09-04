@@ -151,9 +151,9 @@ def neural_network_model(input_size):
     return model
 
 def train_model(training_data, model=False, n_epochs=1):
-    print(training_data)
     X = np.array([i[0] for i in training_data]).reshape(-1, len(training_data[0][0]), 1) #gets observations
     y = [i[1] for i in training_data]
+    print('X size:', np.shape(X), 'Y size:', np.shape(y))
 
     if not model:
         model = neural_network_model(input_size = len(X[0]))
@@ -167,6 +167,8 @@ def train_model(training_data, model=False, n_epochs=1):
 #some_random_games_first() #see if things are working as you expect
 
 training_data = initial_population()
+
+print('Going to train with size', np.shape(training_data))
 model = train_model(training_data, n_epochs=3)
 model = reinforced_learning(model, n_games)
 model.save('cartpole_model-improved.model') #could save the  model and import for longer ones

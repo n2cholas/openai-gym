@@ -135,13 +135,8 @@ def initial_population():
 
 def neural_network_model(input_size):
     network = input_data(shape=[None, input_size, 1], name='input')
-
-    network = fully_connected(network, 128, activation = 'relu') #input layer
-
-    network = fully_connected(network, 256, activation = 'relu') #input layer
-
-    network = fully_connected(network, 128, activation = 'relu') #input layer
-
+    network = tflearn.embedding(network, input_dim=input_size, output_dim = 8)
+    network = tflearn.lstm(net, 8)
     network = fully_connected(network, num_actions, activation='softmax')
     network = regression(network, optimizer='adam', learning_rate=LR, loss='categorical_crossentropy', name='targets')
 
@@ -166,7 +161,7 @@ def train_model(training_data, model=False, n_epochs=1):
 #some_random_games_first() #see if things are working as you expect
 
 training_data = initial_population()
-print('Going to train')
+print('Going to train with size', np.shape(training_data))
 model = train_model(training_data, n_epochs=3)
 print('Done training')
 model = reinforced_learning(model, n_games)
